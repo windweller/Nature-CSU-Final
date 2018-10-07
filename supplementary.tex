@@ -1,0 +1,456 @@
+\RequirePackage{jabbrv}
+% \RequirePackage{lastpage}  % Number of pages in the document
+\documentclass{article}[11pt,oneside]
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsrefs}
+\makeatletter
+\renewcommand{\BibLabel}{%
+    \hfill
+    \Hy@raisedlink{\hyper@anchorstart{cite.\CurrentBib}\hyper@anchorend}%
+    \thebib.%
+}
+\makeatother
+\renewcommand{\biblistfont}{%
+  \normalfont
+  \normalsize
+}
+
+\usepackage[superscript,biblabel,nomove]{cite}
+% \bibliographystyle{unsrtnat}
+% \bibliographystyle{naturemag-doi}
+
+% \makeatletter
+% \renewcommand\NAT@citesuper[3]{\ifNAT@swa
+% \if*#2*\else#2\NAT@spacechar\fi
+% \unskip\kern\p@\textsuperscript{\NAT@@open#1\if*#3*\else,\NAT@spacechar#3\fi\NAT@@close}%
+%   \else #1\fi\endgroup}
+% \makeatother
+
+% \renewcommand{\biblabel}[1]{\bfseries\color{color1}#1.}
+
+% \usepackage{lipsum} % Required to insert dummy text
+% %-----------------------------------------------
+% \let\oldbibliography\thebibliography
+% \renewcommand{\thebibliography}[1]{%
+% \addcontentsline{toc}{section}{\hspace*{-\tocsep}\refname}%
+% \oldbibliography{#1}%
+% \setlength\itemsep{0pt}%
+% }
+
+% add .bib file here
+% \usepackage{filecontents}
+% \begin{filecontents}{supp.bib}
+% % copy and paste .bib here
+% \end{filecontents}
+
+\setlength{\paperwidth}{21cm}   % A4
+\setlength{\paperheight}{29.7cm}% A4
+\setlength\topmargin{-0.5cm}
+\setlength\oddsidemargin{0cm}   
+\setlength\textheight{24.7cm} 
+\setlength\textwidth{16.5cm}
+\setlength\columnsep{0.6cm}  
+
+% custom packages
+\usepackage{subcaption}
+\usepackage{bm}
+\usepackage{csquotes}
+\usepackage{framed}
+\usepackage{multicol}
+\usepackage{changepage}
+\usepackage{multirow}
+\usepackage{setspace}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
+\usepackage{graphicx,xcolor}
+
+\usepackage{multicol}
+
+\usepackage{authblk}
+
+%% Include all macros below
+
+\newcommand{\dataset}{{\cal D}}
+\newcommand{\fracpartial}[2]{\frac{\partial #1}{\partial  #2}}
+
+\def\E{\mathbb{E}} % Expectation symbol
+\def\Gsn{\mathcal{N}} % Normal distribution symbol
+\def\Cov{\mrm{Cov}} % Covariance symbol
+\def\reals{\mathbb{R}}
+\newcommand{\capital}[1]{\bm{\mathrm{#1}}}
+\renewcommand{\exp}[1]{\operatorname{exp}\left(#1\right)} % Exponential
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\def\indic#1{\mbb{I}\left({#1}\right)} % Indicator function
+\def\indicsub#1#2{\mbb{I}_{#2}\left({#1}\right)} % Indicator
+
+% remove abstract
+\renewcommand{\abstractname}{\vspace{-\baselineskip}}
+
+\title{Supplementary Materials \\ 
+\large{DeepTag: inferring diagnoses from veterinary clinical notes}}
+% \title{DeepTag: inferring diagnoses from veterinary clinical notes}
+
+\author[1,+]{Allen Nie}
+\author[1,+]{Ashley Zehnder}
+\author[2]{Rodney L. Page}
+\author[3]{Yuhui Zhang}
+\author[1]{Arturo Lopez Pineda}
+\author[1]{Manuel A. Rivas}
+\author[1,4]{Carlos D. Bustamante}
+\author[1,4, *]{James Zou}
+\affil[1]{Department of Biomedical Data Science, Stanford University, Stanford, CA 94305, USA}
+\affil[2]{Department of Clinical Sciences, Colorado State University, Fort Collins, CO 80523, USA}
+\affil[3]{Department of Computer Science and Technology, Tsinghua University, Beijing, China}
+\affil[4]{Chan-Zuckerberg Biohub, San Francisco, CA 94158, USA}
+
+\affil[*]{jamesz@stanford.edu}
+
+\affil[+]{these authors contributed equally to this work}
+
+\begin{document}
+
+% \flushbottom
+\maketitle
+
+\tableofcontents
+
+\section{CSU Discharge Summary Format}
+
+The Colorado State University discharge summaries contain multiple data fields, including: History, Assessment, Diagnosis, Prognosis, FollowUpPlan, ProceduresAndTreatments, PendingDiagnostics, PendingDiagnosticsComments, Diet, Exercise, DischargeStatus, DischargeDate, Medications, AdditionalInstructions DrugWithdrawal, RecheckVisits, Complications, MedicalComplications, SurgicalComplications and AnesthesiaComplications. We filtered out fields with many null entries as well as the diagnosis related fields, since this is not present in the private practice data. The remaining fields---History, Assessment, Prognosis, DischargeStatus and Medications---were used as the input to train the models.
+
+\section{Model Description}
+
+We formulate the problem of veterinary disease tagging as a multi-label classification problem. Given a veterinary record $\capital{X}$, which contains detailed description of the diagnosis, we try to infer a subset of diseases $\bm{y} \in \mathcal{\bm{Y}}$, given a pre-defined set of diseases $\mathcal{\bm{Y}}$. The problem of inferring a subset of disease codes can be viewed as a series of independent binary prediction problems~\cite{sorower2010literature}. The binary classifier learns to predict whether a disease code $y_i$ exists or not for $i = 1,...,m$, where $m = |\mathcal{\bm{Y}}|$.
+
+Our learning system has two components: a text processing module and disease code prediction module. Our text processing module uses a long-short-term memory network (LSTM) which has demonstrated their effectiveness in learning implicit language patterns from the text \cite{mikolov2012statistical}. Our disease code prediction module consists of binary classifiers that are parameterized independently. 
+A long-short-term memory network is a recurrent neural network with a long-short-term memory cell. It takes one word as input, as well as the previous cell and hidden state. Given a sequence of word embeddings $x_1, ..., x_T$, the recurrent computation of LSTM network at a time step $t$ can be described in Eq~\ref{eq:lstm}, where $\sigma$ is the sigmoid function $\sigma = 1 / (1 + e^{-x})$, and $\tanh$ is the hyperbolic tangent function. We use $\odot$ to indicate the hadamard product.
+
+\begin{equation}
+\begin{split}
+f_t & = \sigma(W_f x_t + V_f h_{t - 1} + b_f) \\
+i_t & = \sigma(W_i x_t + V_i h_{t - 1} + b_i) \\
+o_t & = \sigma(W_o x_t + V_o h_{t - 1} + b_o) \\
+\tilde{c}_t & = \tanh(W_c x_t + V_c h_{t - 1} + b_c) \\
+c_t & = f_t \odot c_{t - 1} + i_t \odot \tilde{c}_t \\
+h_t & = o_t \odot \tanh(c_t)
+\end{split}
+\label{eq:lstm}
+\end{equation}
+
+An extension of this recurrent neural network with LSTM cell is to introduce bidirectional passes \cite{graves2005bidirectional}. Graves et al. shows that introducing bidrectional passes, it can effectively eliminate problems such as retaining long-term dependency when the document is very long. We parameterize two LSTM cells with different set of parameters, one cell is used in forward pass where the sequence is passed in sequentially from the beginning $\{x_1, ..., x_T\}$ , one cell is used for backward pass, where the sequence is passed in with reversed ordering $\{x_T, ..., x_1\}$. At the end of both passes, bidirectional LSTM will output two hidden states represents each input $x_t$, and we stack these two hidden states as our new hidden state for this input $ h_t = [\overrightarrow{h_t};\overleftarrow{h_t}]$.
+
+After computing hidden states over the entire document, we introduce global max pooling over the hidden states, as suggested by Collobert \& Weston \cite{collobert2008unified} so that the hidden states will aggregate information from the entire documents. Assuming the dimension of hidden state is $d$, global max pooling apply an element-wise maximum operation over the temporal dimension of the hidden state matrix, described in Eq~\ref{eq:gmp}.
+
+\begin{equation}
+\begin{aligned}
+H &= [h_1, ..., h_T] \text{, } H \in \reals^{T \times d} \\
+c_j &= \max(H_{j}) \text{, for } j = 1, ..., d\\
+\end{aligned}
+\label{eq:gmp}
+\end{equation}
+
+Then we define a binary classifier for each of the 42 disease code in our pre-defined set. The binary classifier takes in a vector $\bm{c}$ that represents the veterinary record and outputs a sufficient statistic for the Bernoulli probability distribution indicating the probability of whether a tag should be predicted. For $i = 1, ..., m$:
+
+\begin{equation}
+\begin{aligned}
+% g_i(\bm{c}) = \hat{y}_i = \sigma(\theta_i^\intercal \bm{c})\\
+p(y_i) = \hat{y}_i = \sigma(\theta_i^\intercal \bm{c})\\
+\end{aligned}
+\label{eq:binary}
+\end{equation}
+
+We use binary cross entropy loss averaged across all labels as the training loss. Given the binary predictions from the model $\bm{\hat y} \in [0, 1]^m$ and correct one-hot label $\bm{y} \in \{0, 1\}^m$, binary cross entropy loss is written as follow. The decision boundary in our model is set to be 0.5.
+
+\begin{equation}
+\begin{aligned}
+\mathcal{L}_{\text{BCE}}(\bm{\hat{y}}, \bm{y}) = - \frac{1}{m} \sum_{i=1}^m y_i \log (\hat y_i) + (1 - y_i)\log(1- \hat y_i) \\
+\end{aligned}
+\end{equation}
+
+\subsection{Leveraging disease similarity}
+
+We introduce two penalties that are inspired by the implicit relationships between disease codes that we refer to as meta-diseases. By augmenting our loss with these two penalties, we aim to increase model's ability to predict codes that have fewer instances. We introduce them as DeepTag meta-disease objective and DeepTag-M meta-disease objective.
+
+\paragraph{DeepTag meta-disease objective} 
+
+After defining the meta-diseases for the disease codes, we can use techniques the from multi-task learning literature. Each task corresponds to the binary prediction of one of the 42 disease codes. Jacob et al.\cite{jacob2009clustered}
+proposed a hypothesis that if two tasks are similar, the task-specific parameters for these two tasks---i.e. the corresponding weights in the final neural network layer---should be close in vector space, and vice versa.
+
+We can first compute the mean vector of all disease code embeddings $\bar \theta =  \frac{1}{m}\sum_{i=1}^m \theta_i$. Each disease embedding is a weight parameter $\theta$ defined in Eq~\ref{eq:binary}. We can define $\mathcal{J}(k) \subset \{1, ..., m\}$, where $\mathcal{J}(k)$ is a set of disease codes that belong to meta-disease $k$. Then we can compute a vector for each meta-disease: for $k=1,...,K$, $\bar \theta_k = \frac{1}{|\mathcal{J}(k)|} \sum_{i \in \mathcal{J}(k)} \theta_i$.
+
+The within-meta-disease closeness constraint $\Omega_\text{within}$ can be computed as the distance between disease code embeddings and the meta-disease  vector $\bar \theta_k$. $\Omega_\text{between}$ can be computed as the distance between $\bar \theta_k$ and $\bar\theta$.
+We formulate this as an additional loss term $\Omega(\Theta)$, and allow three hyperparameter $\gamma_{\mathrm{norm}}$, $\gamma_{\mathrm{within}}$ and $\gamma_{\mathrm{between}}$ to control the strength of this penalty.
+
+\begin{equation}
+\begin{aligned}
+\Omega_{\mathrm{norm}} &= \sum_{i=1}^m ||\theta_i||^2 \\
+\Omega_{\mathrm{between}} &= \sum_{k=1}^K ||\bar\theta_k - \bar\theta||^2  \\
+\Omega_{\mathrm{within}} &= \sum_{k=1}^K \sum_{i \in \mathcal{J}(k)} ||\theta_i - \bar \theta_k||^2 \\
+% \Omega_{\mathrm{between}} &= \sum_{k=1}^K \sum_{\substack{i=1 \\ i \not\in \mathcal{J}(k)}}^m S(\theta_i, \tilde \theta_k) \\
+\end{aligned}
+\label{eq:clustering}
+\end{equation}
+
+\paragraph{DeepTag-M meta-disease objective} 
+
+We propose an additional penalty following the intuition that we want the model to make accurate predictions for the meta-disease even though mistakes can be made on the disease codes. Meta-disease training labels are created by examining whether any of the disease code under this meta-disease has been marked as tagged. Following the same logic,
+since the disease codes are predicted independently, we can compute the probability of the presence of a meta-disease $\tilde y_k$ from the probability of disease codes that belong to this meta-disease.
+% Eq~\ref{eq:meta}. 
+
+\begin{equation}
+\begin{aligned}
+p(\tilde{y}_k) &= 1 - \prod_{i \in \mathcal{J}(k)} (1 - p(y_i))  \\
+&= 1 - \prod_{i \in \mathcal{J}(k)} (1 - \sigma(\theta_i^\intercal \bm{c})) \\
+\end{aligned}
+\label{eq:meta}
+\end{equation}
+
+After computing the probability of the presence of each meta-disease, given the set of meta-diseases $\bm{\tilde y}$ that are created from our true set of disease codes $\bm{y}$, we can then compute the binary cross entropy loss between the model's estimation on meta-disease probability and true meta-diseases in Eq~\ref{eq:meta-loss}. We use $\beta$ to adjust the strength of this penalty.
+
+\begin{equation}
+\begin{aligned}
+\mathcal{L}_{\text{meta}}(p(\bm{\tilde{y}}), \bm{\tilde y}) = - \frac{1}{K} \sum_{k=1}^K \tilde{y}_k \log (p(\tilde{y}_k)) \\ +  (1 - \tilde{y_k})\log(1- p(\tilde{y}_k)) \\
+\end{aligned}
+\label{eq:meta-loss}
+\end{equation}
+
+\subsection{Learning to abstain}
+
+In practice, it is often desirable for the model to forfeit the prediction if the prediction is likely to be incorrect. When the method is used in collaboration with human experts, the model can just defer difficult cases to them, fostering human-computer collaboration. However, this is still an under-explored field in machine learning, and previous research has focused largely on binary-class single-label classification \cite{cortes2016learning}.
+We formally describe the set-up and our learning-based approach in the following sections, and extend relevant discussion to a multi-label setting.
+
+We propose two abstention settings. Each setting will compute a score $\alpha$ for each document, which we refer to as the abstention priority score. We can then rank these documents using this score $\alpha$.
+When user specifies a percentage of documents to be dropped, 
+documents that have high $\alpha$ will be dropped first.
+
+\paragraph{Confidence-based abstention}
+
+Since our model already outputs a probability for each disease code, if our model is well-calibrated, meaning that the output probability satisfies the following constraint in Eq~\ref{eq:calibration}, then our probability should reflect how uncertain the model is about the output.
+
+\begin{equation}
+\begin{aligned}
+\text{P}_{x, y \sim \mathcal{D}}[y=1 | f_t(x) = p] = p \text{ } \forall p \in [0, 1] \text{ and } \forall t \\
+\end{aligned}
+\label{eq:calibration}
+\end{equation}
+
+The notion of calibration means that when the model thinks the chance of a given prediction to be correct is p\%, we collect all instances that the model predicts with such probability, and the model in total will be correct p\% of the time. A well-calibrated model's output probability corresponds to the model's confidence/certainty on how correct its prediction is. Previous research has shown that binary classifiers with sigmoid scoring function and cross-entropy loss are often well-calibrated \cite{niculescu2005predicting}.
+
+With calibrated $\{p(y_1), ..., p(y_m)\}$, we want to compute how confident the model is on these predictions. For each prediction, the model is more confident if $p(y_i)$ is close to 0 or close to 1. Based on this observation, we can convert the probability into a confidence score with function $g$: $g(p(y_i)) = \max\{p(y_i), 1-p(y_i)\}$.
+
+We can now compute the probability of the model getting $k$ disease codes correct on a single example. We choose all subsets from the entire disease code set, and compute the probability of a chosen subset to be correct as well as the probability of the not chosen $(m-k)$ disease codes to be incorrect.
+
+\begin{equation}
+\begin{aligned}
+\alpha_{\text{conf}} = \sum_{\substack{ I \subset \{1, ..., m\} \\ |I| = k}} (\prod_{i \in I} g(p(y_i))) (\prod_{j \not\in I} 1 - g(p(y_j))) \\
+\end{aligned}
+\label{eq:abs-baseline}
+\end{equation}
+
+The score $\alpha_{\text{conf}}$ is an abstention priority score because it is a valid indication of how confident the model's overall output is. We refer to this scheme confidence-based abstention module (or ``CB'' in Figure~\ref{fig:abs-improv-curve}, ``Baseline'' in Figure~\ref{fig:abs-best-curve}).
+
+\paragraph{Learning-based abstention}
+
+Instead of computing $\alpha$ from a fixed formula, we can try to link abstention priority score to a value that we care about. For example, we want to drop examples that will induce high loss, or equivalently, examples where predicted result gives a low accuracy. However, we do not have access to ground-truth answers in the real world, instead, we propose that if the data distribution $\mathcal{D}$ between training and deployment are consistent ($x_{\text{test}}, y_{\text{test}} \sim \mathcal{D}$, which is the underlying assumption specified in calibration), then we can learn to estimate loss or accuracy for each example. 
+We can compute a regression target for the learned abstention module using the training dataset's accuracy and loss value for each example (Eq~\ref{eq:abs-true-obj}), where $d(p) = \mathbf{1}(p > 0.5)$.
+
+\begin{equation}
+\begin{aligned}
+\alpha_{\text{accu}}^i &= \frac{1}{m} \sum_{j=1}^m \mathbf{1}[d(\bm{\hat y})^i_j = \bm{y}^i_j] \\
+\alpha_{\text{loss}}^i &= \mathcal{L}_{\text{BCE}}(\bm{\hat y}^i, \bm{y}^i) \\
+\end{aligned}
+\label{eq:abs-true-obj}
+\end{equation}
+
+This abstention learning module $A$ can take an input $z$ and output an estimated abstention score $\hat \alpha$. We train this module by minimizing minimum square squared error with the regression target:
+
+\begin{equation}
+\begin{aligned}
+\hat \alpha^i &= A(z^i) \\ % {\text{learn}}
+\mathcal{L}_{\text{MSE}} &= \sum_{i=1}^N (\alpha^i - \hat \alpha^i)^2 \\ % _{\text{learn}}
+\end{aligned}
+\label{eq:abs-learned}
+\end{equation}
+
+We choose four possible inputs from various parts of the DeepTag model that the DeepTag-abstention module can use to predict accuracy or loss without knowing the ground-truth disease codes. Two choices are obvious: confidence scores $g(\bm{\hat y})$ that is used to compute confidence-based abstention priority score in the previous section, and estimated probability for the presence of each disease code $\bm{\hat y}$, which we have used to compute confidence scores via function $g(\cdot)$. 
+However, since $\bm{\hat y}$ is obtained by applying a sigmoid function to the output of the classifier $\hat y_i = \sigma(\theta_i^\intercal \bm{c})$, then we can also use the prior-to-sigmoid value $\theta_i^\intercal \bm{c}$ as input. At last, we hypothesize that the representation of document $\bm{c}$ might also contain relevant information that is useful for model $A$ to determine whether the document is difficult to process.
+
+We fit the model $A$ to estimate $\alpha_\text{learn}$ in the training set of our data, same split as the one used to train the overall model. We then evaluate on a previously unseen test set.
+
+\subsection{MetaMap}
+MetaMap is a program developed by the National Library of Medicine (NLM)~\cite{aronson2010overview}. %We get feature vectors using bag of words encoding method based on words extracted by MetaMap. 
+It processes a document and outputs a list of matched medically-relevant keywords in the given document.
+We use these keywords as features and map each document into a frequency-encoded bag-of-words vector. The final feature vector size is 57,235.
+We perform the multi-label classification task with the Multi-layer Perceptron (MLP) and support vector machine (SVM) with linear kernel~\footnote{\url{http://scikit-learn.org}} on these feature vectors.
+
+\subsection{Text CNN}
+For the convolutional neural network baseline, we use filter windows of 3, 4, and 5, and each has 340 feature maps. We use rectified linear unit after the convolution, and then apply  max pooling over time. We concatenate the the final representations from all filter window sizes, which results in a sentence vector of dimension 1020, comparable to the sentence vector generated by the BLSTM model, which is 1024. The details of our set up follows directly from the implementation of Kim et~al.~\cite{kim2014convolutional}.
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.35]{2by2abstainsion-deeptag.pdf}
+\caption{{\bf Abstention improvement curve.} 
+Top-left: learning to reject model with confidence score as input, estimate accuracy or loss. Top-right: learning to reject model with post-sigmoid probabilities $\bm{\hat y}$ score as input, estimate accuracy or loss. Bottom-left: learning to reject model with prior-to-sigmoid logits as input, estimate accuracy or loss. Bottom-right: learning to reject model with global max pooled hidden states $\bm{c}$ as input, estimate accuracy or loss.
+}
+\label{fig:abs-improv-curve}
+\end{figure*}
+
+\section{Experimental Details}
+
+\subsection{Main Experiment}
+
+We initialize our model with 100-dimension pretrained GloVE word vectors~\cite{pennington2014glove}, and we initialize un-matched words in the CSU training data with sampled multivariate normally distributed vectors. We allow all word embeddings to be updated through the training process. We use a recurrent neural network with a 512 dimension LSTM cell, and set the feed-forward dropout rate to be 20\%. We use batch size of 32, clipping gradient at 5. We use ADAM \cite{kingma2014adam} optimizer with a learning rate of 0.001. 
+
+We trained all models to a maximum of 5 epochs with early stopping, the maximum number of epoch is picked by observing performance on validation dataset. After picking out the best hyper-parameters on validation set,  we evaluate all models in-domain generalization performance on the CSU test dataset and out-domain generalization performance on the PP dataset.
+
+After hyperparameter searching, we report models with the hyperparameters that perform well on each dataset. We train each model five times and report the averaged result.
+For the CSU dataset, we find $\beta=0.001$ works best for DeepTag-M, and $\gamma_\text{norm}=1e-5, \gamma_\text{between}=1e-4, \gamma_\text{within}=1e-4$ works best for DeepTag.
+For the PP dataset, we find $\beta=0.0001$ works the best for DeepTag-M, and $\gamma_\text{norm}=1e-4, \gamma_\text{between}=1e-3, \gamma_\text{within}=1e-3$ works best for DeepTag. We report these results in Table~\ref{tab:pp}.
+
+For Table~\ref{tab:detailed-csu-pp}, we report DeepTag trained with  $\gamma_\text{norm}=1e-4, \gamma_\text{between}=1e-3, \gamma_\text{within}=1e-3$ and we regard this as our best setting.
+
+\subsection{Abstention Experiment}
+
+We use a 3-layer neural network with SELU activation \cite{klambauer2017self} to parameterize abstention model $A$. The learning to abstain model is trained on various outputs generated by the DeepTag system. All configurations of learning to abstain models are trained optimally for 3 epochs on the training set, and evaluated on the unseen test set.
+
+\section{Coding of Private Practice (PP) notes}
+
+Our guidelines for applying diagnostic codes to the private practice dataset were derived following consultations and review of coding guidelines from CSU as well consultation with an additional coding professional who helps maintain the SNOMED-veterinary extension and are summarized below:
+
+\begin{enumerate}
+
+\item Implied assessments/problems are not be coded unless there is direct evidence to support those diagnoses in the record or noted in the assessment or diagnosis fields. At minimum, diagnoses are applied if there is support from the physical exam and the primary clinician considers it a problem in the patients “Assessment” section in the notes.  It is preferred if the assessment/problem is also addressed in the “Plan” section of the note by way of treatments or results from additional diagnostic tests (which are in the “Plan”), but not all diagnoses are addressed here. For example, if the clinician applies a free text diagnosis of obesity, the plan includes weight loss and there is a 7/8 BCS, it is appropriate to code obesity as a problem.
+
+\item Tentative diagnoses are not coded.
+
+\item Historical findings or diagnoses are not coded on a particular visit unless they represent an active problem.
+
+\item Only diagnoses are coded, not signs, symptoms or presenting complaints.
+\end{enumerate}
+
+\section{SNOMED Meta-diseases}
+
+Here we provide the full list of the SNOMED-CT meta-diseases that we used to regularize the training objective of DeepTag. In the list, the numbers correspond to the meta-diseases, and the letters indicate the original SNOMED-CT codes. We manually grouped the 42 SNOMED-CT codes into these 18 meta-diseases, using the analogous grouping of the ICD-9 codes as a guide. 
+
+\begin{multicols}{2}
+\begin{enumerate}
+\item Complications of pregnancy, childbirth, and the puerperium 
+ \begin{enumerate} 
+ \item Disorder of labor / delivery (disorder)  % found
+ \item Disorder of pregnancy (disorder) % found
+%  \item Disorder of puerperium (disorder)
+ \end{enumerate} 
+\item Diseases of the genitourinary system 
+ \begin{enumerate} 
+ \item Disorder of the genitourinary system (disorder) % found
+ \end{enumerate} 
+\item Diseases of the musculoskeletal system and connective tissue 
+ \begin{enumerate} 
+ \item Disorder of connective tissue (disorder) % found
+ \item Disorder of musculoskeletal system (disorder) % found
+ \end{enumerate} 
+\item Diseases of the skin and subcutaneous tissue 
+ \begin{enumerate} 
+ \item Angioedema and/or urticaria (disorder) % found
+ \item Disorder of pigmentation (disorder) % found
+ \item Disorder of integument (disorder) % found
+ \end{enumerate} 
+\item Certain conditions originating in the perinatal period 
+ \begin{enumerate} 
+ \item Disorder of fetus or newborn (disorder) % found
+ \end{enumerate} 
+\item Congenital anomalies 
+ \begin{enumerate} 
+ \item Hereditary disease (disorder) % found
+ \item Congenital disease (disorder) % found
+%  \item Familial disease (disorder)
+ \end{enumerate} 
+\item Injury and poisoning 
+ \begin{enumerate} 
+ \item Disorder caused by exposure to ionizing radiation (disorder) 
+ \item Poisoning (disorder)  % found
+ \item Traumatic AND/OR non-traumatic injury (disorder)  % found
+%  \item Self-induced disease (disorder)
+ \end{enumerate} 
+\item Symptoms, signs, and ill-defined conditions 
+ \begin{enumerate} 
+ \item Hyperproteinemia (disorder) % found
+ \item Clinical finding (finding)  % found
+ \end{enumerate} 
+\item Neoplasms 
+ \begin{enumerate} 
+ \item Neoplasm and/or hamartoma (disorder) % found
+%  \item Fibromatosis (disorder)
+ \end{enumerate} 
+\item Infectious and parasitic diseases 
+ \begin{enumerate} 
+ \item Disease caused by Arthropod (disorder) % found
+%  \item Disease caused by Annelida (disorder)
+ \item Infectious disease (disorder) % found
+%  \item Disease of presumed infectious origin (disorder)
+ \item Disease caused by parasite (disorder) % found
+%  \item Enzootic disease (disorder)
+%  \item Epizootic disease (disorder)
+ \end{enumerate} 
+\item Diseases of blood and blood-forming organs 
+ \begin{enumerate} 
+ \item Anemia (disorder) % found
+ \item Disorder of cellular component of blood (disorder) % found
+ \item Disorder of hematopoietic cell proliferation (disorder) % found
+ \item Disorder of hemostatic system (disorder) % found
+ \item Spontaneous hemorrhage (disorder) % found
+%  \item Hyperviscosity syndrome (disorder)
+%  \item Secondary and recurrent hemorrhage (disorder)
+%  \item Secondary hemorrhage (disorder)
+ \end{enumerate} 
+\item Endocrine, nutritional and metabolic diseses, and immunity disorders 
+ \begin{enumerate} 
+ \item Autoimmune disease (disorder) % found
+ \item Disorder of immune function (disorder) % found
+ \item Hypersensitivity condition (disorder) % found
+ \item Metabolic disease (disorder) % found
+ \item Nutritional deficiency associated condition (disorder) % found
+ \item Nutritional disorder (disorder) % found
+ \item Obesity (disorder) % found
+%  \item Obesity associated disorder (disorder)
+ \item Propensity to adverse reactions (disorder) % found
+ \item Disorder of endocrine system (disorder) % found
+ \end{enumerate} 
+\item Diseases of the nervous system 
+ \begin{enumerate} 
+%  \item Feline hyperesthesia syndrome (disorder)
+ \item Disorder of nervous system (disorder) % found
+ \end{enumerate} 
+\item Mental disorders 
+ \begin{enumerate} 
+ \item Mental disorder (disorder) % found
+ \end{enumerate} 
+\item Diseases of the circulatory system 
+ \begin{enumerate} 
+ \item Disorder of cardiovascular system (disorder) % found
+ \end{enumerate} 
+\item Diseases of sense organs 
+ \begin{enumerate} 
+ \item Disorder of auditory system (disorder) % found
+%  \item Vertiginous syndrome (disorder)
+ \item Visual system disorder (disorder) % found
+%  \item Sensory disorder (disorder)
+ \end{enumerate} 
+\item Diseases of the digestive system 
+ \begin{enumerate} 
+ \item Vomiting (disorder) % found
+%  \item Enterotoxemia (disorder)
+ \item Disorder of digestive system (disorder)  % found
+ \end{enumerate} 
+\item Diseases of the respiratory system 
+ \begin{enumerate} 
+ \item Disorder of respiratory system (disorder) % found
+ \end{enumerate} 
+\end{enumerate}
+\end{multicols}
+
+\bibliography{sample}
+
+\end{document}

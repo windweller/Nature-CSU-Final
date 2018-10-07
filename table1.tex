@@ -1,0 +1,38 @@
+% Table 1
+\begin{table*}[h]
+\centering
+\footnotesize
+\begin{adjustwidth}{-0.5in}{0in}
+\caption{\textbf{Report of DeepTag performance on the CSU test data and PP data}}
+\begin{tabular}{c | c c c c c c | c c c c c c }
+\toprule
+ & \multicolumn{6}{c|}{CSU} & \multicolumn{6}{c}{PP (Cross-hospital)}  \\
+Disease code & N & Prec & Rec & $F_1$ & AUC & Sub & N & Prec & Rec & $F_1$ & AUC & Sub \\
+\midrule
+Autoimmune disease & 1280 & 94.0 & 72.3 & 81.4 & 0.86 & 11 & 1 & 0.0 & 0.0 & 0.0 & 0.50 & 1(1) \\
+Congenital disease & 3345 & 72.9 & 35.9 & 47.3 & 0.68 & 224 & 17 & 46.7 & 3.5 & 6.4 & 0.52 & 8(6) \\
+Propensity to adverse reactions & 5105 & 89.1 & 70.2 & 78.1 & 0.85 & 8 & 43 & 67.2 & 12.6 & 19.5 & 0.56 & 7(2) \\
+Metabolic disease & 5265 & 68.9 & 55.4 & 61.0 & 0.77 & 82 & 26 & 56.6 & 48.5 & 51.1 & 0.73 & 12(9) \\
+Disorder of auditory system & 5393 & 81.0 & 66.2 & 72.8 & 0.83 & 67 & 64 & 78.8 & 70.3 & 73.8 & 0.84 & 12(6) \\
+Hypersensitivity condition & 6871 & 85.7 & 74.6 & 79.5 & 0.87 & 31 & 50 & 67.7 & 22.4 & 31.6 & 0.61 & 11(4) \\
+Disorder of endocrine system & 7009 & 79.2 & 66.7 & 72.2 & 0.83 & 84 & 46 & 44.4 & 21.7 & 28.7 & 0.60 & 8(8) \\
+Disorder of hematopoietic cell proliferation & 7294 & 95.1 & 87.4 & 91.0 & 0.94 & 22 & 16 & 62.7 & 25.0 & 34.5 & 0.62 & 6(1) \\
+Disorder of nervous system & 7488 & 76.1 & 63.8 & 69.2 & 0.81 & 243 & 27 & 40.4 & 26.7 & 30.8 & 0.62 & 19(14) \\
+Disorder of cardiovascular system & 8733 & 79.3 & 62.5 & 69.7 & 0.81 & 351 & 53 & 44.1 & 52.1 & 46.4 & 0.73 & 30(24) \\
+Disorder of the genitourinary system & 8892 & 77.7 & 62.6 & 69.3 & 0.81 & 317 & 44 & 47.8 & 39.1 & 42.2 & 0.68 & 19(12) \\
+Traumatic AND/OR non-traumatic injury & 9027 & 72.8 & 57.2 & 63.5 & 0.78 & 536 & 19 & 50.5 & 15.8 & 23.1 & 0.58 & 13(8) \\
+Visual system disorder & 10139 & 84.3 & 81.1 & 82.6 & 0.90 & 413 & 62 & 65.0 & 62.6 & 63.2 & 0.79 & 39(34) \\
+Infectious disease & 11304 & 71.2 & 53.7 & 60.8 & 0.76 & 260 & 88 & 63.8 & 23.0 & 32.3 & 0.60 & 20(10) \\
+Disorder of respiratory system & 11322 & 79.5 & 65.5 & 71.8 & 0.82 & 274 & 27 & 38.3 & 42.2 & 38.2 & 0.69 & 16(14) \\
+Disorder of connective tissue & 17477 & 75.4 & 67.0 & 70.7 & 0.81 & 567 & 24 & 30.4 & 24.2 & 26.3 & 0.61 & 15(11) \\
+Disorder of musculoskeletal system & 20060 & 77.0 & 73.4 & 74.8 & 0.84 & 670 & 56 & 54.0 & 41.4 & 46.1 & 0.69 & 31(19) \\
+Disorder of integument & 21052 & 84.2 & 71.6 & 77.3 & 0.84 & 360 & 156 & 65.7 & 60.1 & 62.6 & 0.74 & 58(32) \\
+Disorder of digestive system & 22589 & 76.8 & 67.1 & 71.5 & 0.81 & 694 & 195 & 58.0 & 47.9 & 51.3 & 0.65 & 47(36) \\
+Neoplasm and/or hamartoma & 36108 & 92.2 & 88.9 & 90.5 & 0.93 & 749 & 59 & 26.1 & 72.5 & 37.8 & 0.74 & 18(7) \\
+\bottomrule
+\end{tabular}
+\begin{flushleft} This table reports the DeepTag's performance (precision, recall, $F_1$ and AUC) for the 20 most frequent disease codes (from a total of 42 disease codes). $N$ indicates the total number of examples in the dataset. AUC refers to area under the receiver operator curve. Sub indicates the number of lower-level disease codes that are present in the dataset that are binned into one of the disease level codes. For the PP dataset, the Sub number in parentheses indicate the number of subtypes that are also present in CSU dataset. 
+\end{flushleft}
+ \label{tab:detailed-csu-pp}
+\end{adjustwidth}
+\end{table*}
