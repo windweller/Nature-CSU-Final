@@ -188,7 +188,7 @@ In order to evaluate how well DeepTag-abstain performs compared to the baseline,
 For both baseline and DeepTag-abstain, we specify a proportion of the documents that need to be removed. We adjust the dropped portion from 0 to 0.9 (dropping 90\% of the examples at the high end). An abstention method that can drop more erroneously tagged documents earlier will observe a faster increase in its performance, corresponding to a curve with steeper slope. 
 
 DeepTag-abstain demonstrates a substantial improvement over the baseline in Figure~4. 
-We note that not all learning to abstain schemes are able to out-perform the baseline. The details of module design and improvement curve for the rest of the modules can be seen in the Supplement.  
+We note that not all learning to abstain schemes are able to out-perform the baseline. The details of module design and improvement curve for the rest of the modules can be seen in the Supplemental Figure~2.
 
 \section*{Discussion}
 
@@ -226,7 +226,7 @@ Documents in our corpus have been tagged with SNOMED-CT codes that describe the 
 \subsection*{Difference in data structures}
 Due to the inherent differences in clinical notes/discharge summaries prepared for patients in an academic setting compared to the shorter `SOAP' format notes (Subjective, Objective, Assessment, Plan) prepared in private practice, there are substantial differences in the format as well as the writing style and level of detail between these two datasets. In addition, the private practice records exhibit significant differences in record styles between clinicians, as some clinicians use standardized forms while others use abbreviated clinical notes containing only references to abnormal clinical findings. 
 
-As can be seen in Figure~5, both dataset have more than 80\% documents associated with more than one disease code, and in terms of document length distribution, PP dataset document is much shorter than CSU dataset, while the average PP document length is 191 words. The average CSU document length is 325 words.
+As can be seen in Supplemental Figure~1, both dataset have more than 80\% documents associated with more than one disease code, and in terms of document length distribution, PP dataset document is much shorter than CSU dataset, while the average PP document length is 191 words. The average CSU document length is 325 words.
 
 \subsection*{Algorithm development and analysis}
 
@@ -265,9 +265,6 @@ A.N. and A.Z. share co-first authorship. A.N. performed the natural language pro
 We compare the per-disease code $F_1$ score between baseline LSTM model and DeepTag model on the PP dataset. The disease codes are sorted from the least frequent to the most frequent in the training dataset, which comes from CSU.
 
 \paragraph{Figure~4:} \textbf{Comparison of the abstention models. } DeepTag-abstain is the abstention priority score estimator that uses confidence scores as input and estimate per-document accuracy of a given document. Baseline refers to the abstention scheme where the per-document abstention priority score is computed from individual disease code confidence scores without any learning. As a greater proportion of the examples are abstained from, the performance---$F_1$ and Exact Match (EM)---of both methods improve. DeepTag-abstain shows faster improvement, indicating that it learns to abstain in more difficult cases.
-
-\paragraph{Figure~5:} \textbf{Document length and disease code distribution on CSU and PP dataset.}
-Proportion of records in each dataset with certain length (number of words) or certain number of disease codes.
 
 \paragraph{Table~1:} This table reports the DeepTag's performance (precision, recall, $F_1$ and AUC) for the 20 most frequent disease codes (from a total of 42 disease codes). $N$ indicates the total number of examples in the dataset. AUC refers to area under the receiver operator curve. Sub indicates the number of lower-level disease codes that are present in the dataset that are binned into one of the disease level codes. For the PP dataset, the Sub number in parentheses indicate the number of subtypes that are also present in CSU dataset. 
 
